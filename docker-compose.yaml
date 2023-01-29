@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./lib:/code/lib
+      - ./test:/code/test
+      - ./mix.exs:/code/mix.exs
+      - ./mix.lock:/code/mix.lock
+    tty: true
+    stdin_open: true

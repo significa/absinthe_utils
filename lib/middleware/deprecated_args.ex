@@ -41,6 +41,8 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
   ```
   """
 
+  alias AbsintheUtilsTest.Helpers.Errors
+
   @behaviour Absinthe.Middleware
 
   @impl true
@@ -81,15 +83,10 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
     {value, arguments} = Map.pop(arguments, legacy_arg_identifier)
 
     if Map.get(opts, :non_null, false) == true and value === nil do
-      Absinthe.Resolution.put_result(
+      Errors.put_error(
         resolution,
-        {
-          :error,
-          %{
-            message: "Argument #{camelize(legacy_arg_identifier)} cannot be null",
-            extensions: %{code: "NOT_NULL_VIOLATION"}
-          }
-        }
+        "Argument #{camelize(legacy_arg_identifier)} cannot be null",
+        "NOT_NULL_VIOLATION"
       )
     else
       %{
@@ -111,15 +108,10 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
       when is_map_key(arguments, new_arg_identifier) do
     if Map.get(opts, :non_null, false) == true and
          Map.get(arguments, new_arg_identifier) == nil do
-      Absinthe.Resolution.put_result(
+      Errors.put_error(
         resolution,
-        {
-          :error,
-          %{
-            message: "Argument #{camelize(new_arg_identifier)} cannot be null",
-            extensions: %{code: "NOT_NULL_VIOLATION"}
-          }
-        }
+        "Argument #{camelize(new_arg_identifier)} cannot be null",
+        "NOT_NULL_VIOLATION"
       )
     else
       resolution
@@ -147,17 +139,11 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
           is_required: true
         }
       ) do
-    Absinthe.Resolution.put_result(
+    Errors.put_error(
       resolution,
-      {
-        :error,
-        %{
-          message:
-            "Exactly one of the following arguments must be provided: " <>
-              "#{camelize(legacy_arg_identifier)}, #{camelize(new_arg_identifier)}",
-          extensions: %{code: "MUTUALLY_EXCLUSIVE_ARG_VIOLATION"}
-        }
-      }
+      "Exactly one of the following arguments must be provided: " <>
+        "#{camelize(legacy_arg_identifier)}, #{camelize(new_arg_identifier)}",
+      "MUTUALLY_EXCLUSIVE_ARG_VIOLATION"
     )
   end
 

@@ -3,6 +3,8 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   alias AbsintheUtilsTest.Helpers.Errors
 
+  # TODO: Clean this up
+
   @impl true
   def call(
         resolution = %{arguments: arguments},
@@ -41,7 +43,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     else
       Errors.put_error(
         resolution,
-        "The entities provided in the following ids, could not be found: " <>
+        "The entity(ies) provided in the following arg(s), could not be found: " <>
           Enum.join(not_found_arguments, ", "),
         "NOT_FOUND"
       )
@@ -53,12 +55,18 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     load_function = Keyword.fetch!(opts, :load_function)
     push_to_key = Keyword.get(opts, :new_name, argument_name)
 
-    {entity_key, arguments} = Map.pop!(arguments, argument_name)
+    {input_value, arguments} = Map.pop!(arguments, argument_name)
 
-    # TODO: Clean this up, too complex and hard to read
-    case load_function.(entity_key) do
+    case load_function.(input_value) do
       {:ok, nil} ->
         :not_found
+
+      {:ok, values} when is_list(values) ->
+        if length(values) != length(input_value) do
+          :not_found
+        else
+          Map.put(arguments, push_to_key, values)
+        end
 
       {:ok, value} ->
         Map.put(arguments, push_to_key, value)

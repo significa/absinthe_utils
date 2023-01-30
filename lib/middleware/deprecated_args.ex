@@ -1,17 +1,32 @@
 defmodule AbsintheUtils.Middleware.DeprecatedArgs do
   @doc """
+  Absinthe middleware for handling deprecated or renamed `field` arguments (`arg`).
 
-  Absinthe middleware for handling of deprecated, renamed field arguments.
+  It automatically handles mutual exclusivity and changing the argument keys (names)
+  before passing it to the resolver.
+  For this to work, this middleware must be added before the resolver.
 
-  TODO: improve documentation
+  Middleware options:
 
-  ## Usage
+   - `legacy_arg_identifier`: The identifier of the field that has been deprecated.
+     If this argument is provided, this middleware will rename it to the `new_arg_identifier`.
+
+   - `new_arg_identifier`: The identifier of the new field, if passed, nothing changes.
+
+   - `is_required`: if at least one of the arguments must be provided.
+     If the validation fails, an Absinthe compliant error will be returned and
+     the operation marked as resolved (it will not reach the resolver).
+
+  All options are required.
+
+  ## Example usage
 
   ```
   field :query_with_deprecated_required_args, non_null(:string) do
     arg(:old_arg, :string, deprecate: "Use `newParam` instead.")
     arg(:new_arg, :string)
 
+    # This middleware must be added before the resolver
     middleware(
       DeprecatedArgs,
       %{

@@ -3,8 +3,7 @@ defmodule AbsintheUtilsTest.Middleware.DeprecatedArgsTest do
 
   alias AbsintheUtils.Middleware.DeprecatedArgs
 
-  # TODO: add tests for non_null: true.
-  # Also, how to prevent is_required: false and non_null: true together?
+  # TODO: how to prevent is_required: false and non_null: true together?
 
   defmodule TestSchema do
     use Absinthe.Schema

@@ -1,8 +1,16 @@
 defmodule AbsintheUtils.MixProject do
   use Mix.Project
 
-  @version System.get_env("APP_VERSION", "0.0.0-development")
+  @version Regex.replace(
+             ~r/^v+/,
+             System.get_env("APP_VERSION", "v0.0.1-development"),
+             ""
+           )
+
   @source_url "https://github.com/significa/absinthe_utils"
+
+  @description "Collection of utils for absinthe"
+
   def project do
     [
       app: :absinthe_utils,
@@ -11,10 +19,14 @@ defmodule AbsintheUtils.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @source_url,
+      description: @description,
       package: [
         maintainers: ["Significa"],
         licenses: ["MIT"],
-        links: %{"GitHub" => @source_url}
+        links: %{
+          "GitHub" => @source_url,
+          "Author Website (Significa)" => "https://significa.co"
+        }
       ],
       docs: [
         source_ref: "v#{@version}",
@@ -23,7 +35,7 @@ defmodule AbsintheUtils.MixProject do
         ],
         main: "readme",
         formatters: ["html", "epub"],
-        description: "Collection of helpers for absinthe",
+        description: @description,
         name: "Absinthe Utils"
       ]
     ]

@@ -16,23 +16,17 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
     ]
 
     def get_by_id(enumerable, id) do
-      {
-        :ok,
-        Enum.find(
-          enumerable,
-          fn item -> item.id == id end
-        )
-      }
+      Enum.find(
+        enumerable,
+        fn item -> item.id == id end
+      )
     end
 
     def filter_by_ids(enumerable, ids) do
-      {
-        :ok,
-        Enum.filter(
-          enumerable,
-          fn item -> item.id in ids end
-        )
-      }
+      Enum.filter(
+        enumerable,
+        fn item -> item.id in ids end
+      )
     end
 
     def get_user(id), do: get_by_id(@users, id)

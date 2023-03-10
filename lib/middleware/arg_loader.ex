@@ -1,9 +1,50 @@
 defmodule AbsintheUtils.Middleware.ArgLoader do
+  @moduledoc """
+  Absinthe middleware for loading entities in `field` arguments.
+
+  This middleware should be defined before `resolve`. It will manipulate the arguments
+  before they are passed to the resolver function.
+
+  As configuration it accepts a map of original argument names to a keyword list, containing:
+
+  - `load_function`: the function used to load the argument into an entity.
+    As an input accepts one single argument: the input received in the resolution.
+    It returns a tuple of `{:ok, nil}`  `{:ok, nil}` o
+  - `new_name`: the new name to push the loaded entity into.
+    (optional, defaults to the original argument name).
+
+
+  ## Example
+
+  ```
+  query do
+    field :user, :user do
+      arg(:id, :id)
+
+      middleware(
+        ArgLoader,
+        %{
+          id: [
+            new_name: :user,
+            load_function: &get_user_by_id/1
+          ]
+        }
+      )
+
+      resolve(fn _, arguments, _ ->
+        {:ok, Map.get(arguments, :user)}
+      end)
+    end
+  ```
+
+  This will define a `user` query that accepts an `id` input. Before calling the resolver,
+  it will load the user via `get_user_by_id(id)` into the `user` argument, removing `id`.
+
+  """
+
   @behaviour Absinthe.Middleware
 
   alias AbsintheUtilsTest.Helpers.Errors
-
-  # TODO: Clean this up
 
   @impl true
   def call(
@@ -58,17 +99,19 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     {input_value, arguments} = Map.pop!(arguments, argument_name)
 
     case load_function.(input_value) do
-      {:ok, nil} ->
+      nil ->
         :not_found
 
-      {:ok, values} when is_list(values) ->
+      values when is_list(values) ->
+        # FIXME: we should not assume a list based on the output of the load function
+        # WE could also check the input type, but it would be better to replace it with a configuration flag
         if length(values) != length(input_value) do
           :not_found
         else
           Map.put(arguments, push_to_key, values)
         end
 
-      {:ok, value} ->
+      value ->
         Map.put(arguments, push_to_key, value)
     end
   end

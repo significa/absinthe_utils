@@ -1,5 +1,5 @@
 defmodule AbsintheUtils.Middleware.DeprecatedArgs do
-  @doc """
+  @moduledoc """
   Absinthe middleware for handling deprecated or renamed `field` arguments (`arg`).
 
   It automatically handles mutual exclusivity and changing the argument keys (names)
@@ -26,7 +26,7 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
     arg(:old_arg, :string, deprecate: "Use `newParam` instead.")
     arg(:new_arg, :string)
 
-    # This middleware must be added before the resolver
+    # Add the before before your resolver
     middleware(
       DeprecatedArgs,
       %{

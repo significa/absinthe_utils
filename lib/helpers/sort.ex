@@ -1,4 +1,21 @@
 defmodule AbsintheUtils.Helpers.Sort do
+  @moduledoc """
+  Generic sorting utils.
+  """
+
+  @doc """
+  Sorts an `unsorted_enumerable` based on `sorted_enumerable`.
+  `unsorted_enumerable` cannot contain duplicates and
+  can only contain elements from `sorted_enumerable`.
+
+  Use mappers to specify getters for each element in the enumerable.
+
+  ## Examples
+
+      iex> Sort.sort_alike([:b, :c, :a], [:a, :b, :c])
+      [:a, :b, :c]
+
+  """
   def sort_alike(
         unsorted_enumerable,
         sorted_enumerable,

@@ -9,7 +9,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   - `load_function`: the function used to load the argument into an entity.
     As an input accepts one single argument: the input received in the resolution.
-    It returns a tuple of `{:ok, nil}`  `{:ok, nil}` o
+    The function should return the entity, or `nil` when not found.
   - `new_name`: the new name to push the loaded entity into.
     (optional, defaults to the original argument name).
 
@@ -21,6 +21,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     field :user, :user do
       arg(:id, :id)
 
+      # Add the before before your resolver
       middleware(
         ArgLoader,
         %{

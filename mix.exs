@@ -3,7 +3,7 @@ defmodule AbsintheUtils.MixProject do
 
   @version Regex.replace(
              ~r/^v+/,
-             System.get_env("APP_VERSION", "v0.0.1-development"),
+             System.get_env("VERSION", "v0.0.1-development"),
              ""
            )
 

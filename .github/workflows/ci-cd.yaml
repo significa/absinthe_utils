@@ -90,5 +90,6 @@ jobs:
       - name: Publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          VERSION: ${{ github.ref_name }}
         run: |
           mix hex.publish --yes

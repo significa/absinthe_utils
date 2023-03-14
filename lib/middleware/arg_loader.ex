@@ -13,7 +13,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   - `new_name`: the new name to push the loaded entity into.
     (optional, defaults to the original argument name).
 
-  ## Example
+  ## Examples
 
   ```
   query do
@@ -41,6 +41,36 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   This will define a `user` query that accepts an `id` input. Before calling the resolver,
   it will load the user via `get_user_by_id(id)` into the `user` argument, removing `id`.
 
+  `ArgLoader` can also be used to load a `list_of` arguments:
+
+  ```
+  query do
+    field :users, non_null(list_of(:user)) do
+      arg(:ids, non_null(list_of(:id)))
+
+      middleware(
+        ArgLoader,
+        %{
+          ids: [
+            new_name: :users,
+            load_function: fn ids ->
+              ids
+              |> get_users_by_id()
+              |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
+            end
+          ]
+        }
+      )
+
+      resolve(fn _, params, _ ->
+        {:ok, Map.get(params, :users)}
+      end)
+    end
+  end
+  ```
+
+  Note the use of ` AbsintheUtils.Helpers.Sorting.sort_alike/2` to ensure the returned list of
+  entities from the repository is sorted according to the user's input.
   """
 
   @behaviour Absinthe.Middleware
@@ -103,16 +133,18 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
       nil ->
         :not_found
 
-      values when is_list(values) ->
+      entities when is_list(entities) ->
         # TODO: Can we assume the result is a list of entities
         #  based on the output of the load function?
         # We could also check the input type,
         #  but the saver solution might be to to add a `is_list` option.
 
-        if is_list(input_value) and length(values) != length(input_value) do
+        entities = Enum.reject(entities, &is_nil/1)
+
+        if is_list(input_value) and length(entities) != length(input_value) do
           :not_found
         else
-          Map.put(arguments, push_to_key, values)
+          Map.put(arguments, push_to_key, entities)
         end
 
       value ->

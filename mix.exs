@@ -1,11 +1,7 @@
 defmodule AbsintheUtils.MixProject do
   use Mix.Project
 
-  @version Regex.replace(
-             ~r/^v+/,
-             System.get_env("VERSION", "v0.0.1-development"),
-             ""
-           )
+  @version "0.0.1-development"
 
   @source_url "https://github.com/significa/absinthe_utils"
 

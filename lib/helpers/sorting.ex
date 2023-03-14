@@ -10,10 +10,10 @@ defmodule AbsintheUtils.Helpers.Sorting do
 
   ## Examples
 
-      iex> Sort.sort_alike([:b, :c, :a], [:a, :b, :c])
+      iex> Sorting.sort_alike([:b, :c, :a], [:a, :b, :c])
       [:a, :b, :c]
 
-      iex> Sort.sort_alike([%{id: 1}, %{id: 2}], [2, 1], & &1.id)
+      iex> Sorting.sort_alike([%{id: 1}, %{id: 2}], [2, 1], & &1.id)
       [%{id: 2}, %{id: 1}]
   """
   def sort_alike(

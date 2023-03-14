@@ -78,6 +78,28 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
         end)
       end
 
+      field :users_order_preserved, non_null(list_of(:user)) do
+        arg(:ids, non_null(list_of(:id)))
+
+        middleware(
+          ArgLoader,
+          %{
+            ids: [
+              new_name: :users,
+              load_function: fn ids ->
+                ids
+                |> SampleRepository.get_users()
+                |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
+              end
+            ]
+          }
+        )
+
+        resolve(fn _, params, _ ->
+          {:ok, Map.get(params, :users)}
+        end)
+      end
+
       field :two_users, non_null(list_of(:user)) do
         arg(:user1_id, :id)
         arg(:user2_id, :id)
@@ -269,6 +291,37 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                      $ids: [ID]!
                    ) {
                     users(
+                      ids: $ids
+                     ){
+                      id
+                      name
+                     }
+                   }
+                 """,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["1", "invalid", "2"]
+                 }
+               )
+    end
+
+    test "not found when using Sorting.sort_alike" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    extensions: %{code: "NOT_FOUND"},
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: ids"
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 """
+                   query (
+                     $ids: [ID]!
+                   ) {
+                    usersOrderPreserved(
                       ids: $ids
                      ){
                       id

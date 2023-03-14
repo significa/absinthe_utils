@@ -32,7 +32,17 @@ defmodule AbsintheUtils.MixProject do
         main: "readme",
         formatters: ["html", "epub"],
         description: @description,
-        name: "Absinthe Utils"
+        name: "Absinthe Utils",
+        groups_for_modules: [
+          "Absinthe middlewares": [
+            AbsintheUtils.Middleware.ArgLoader,
+            AbsintheUtils.Middleware.DeprecatedArgs
+          ],
+          "Helpers and utility functions": [
+            AbsintheUtils.Helpers.Sorting,
+            AbsintheUtils.Helpers.Errors
+          ]
+        ]
       ]
     ]
   end

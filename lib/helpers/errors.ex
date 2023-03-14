@@ -1,4 +1,8 @@
-defmodule AbsintheUtilsTest.Helpers.Errors do
+defmodule AbsintheUtils.Helpers.Errors do
+  @moduledoc """
+  Helpers for Absinthe errors.
+  """
+
   @doc """
   Given an absinthe resolution puts an error and marks the resolution as resolved.
   """

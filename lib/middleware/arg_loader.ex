@@ -13,7 +13,6 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   - `new_name`: the new name to push the loaded entity into.
     (optional, defaults to the original argument name).
 
-
   ## Example
 
   ```
@@ -21,12 +20,13 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     field :user, :user do
       arg(:id, :id)
 
-      # Add the before before your resolver
+      # Add the middleware before your resolver
       middleware(
         ArgLoader,
         %{
           id: [
             new_name: :user,
+            is_list: true,
             load_function: &get_user_by_id/1
           ]
         }
@@ -45,7 +45,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   @behaviour Absinthe.Middleware
 
-  alias AbsintheUtilsTest.Helpers.Errors
+  alias AbsintheUtils.Helpers.Errors
 
   @impl true
   def call(
@@ -104,9 +104,12 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         :not_found
 
       values when is_list(values) ->
-        # FIXME: we should not assume a list based on the output of the load function
-        # WE could also check the input type, but it would be better to replace it with a configuration flag
-        if length(values) != length(input_value) do
+        # TODO: Can we assume the result is a list of entities
+        #  based on the output of the load function?
+        # We could also check the input type,
+        #  but the saver solution might be to to add a `is_list` option.
+
+        if is_list(input_value) and length(values) != length(input_value) do
           :not_found
         else
           Map.put(arguments, push_to_key, values)

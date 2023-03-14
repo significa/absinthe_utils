@@ -26,7 +26,7 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
     arg(:old_arg, :string, deprecate: "Use `newParam` instead.")
     arg(:new_arg, :string)
 
-    # Add the before before your resolver
+    # Add the middleware before your resolver
     middleware(
       DeprecatedArgs,
       %{
@@ -41,7 +41,7 @@ defmodule AbsintheUtils.Middleware.DeprecatedArgs do
   ```
   """
 
-  alias AbsintheUtilsTest.Helpers.Errors
+  alias AbsintheUtils.Helpers.Errors
 
   @behaviour Absinthe.Middleware
 

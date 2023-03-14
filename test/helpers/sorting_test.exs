@@ -1,31 +1,37 @@
-defmodule AbsintheUtils.Helpers.SortTest do
+defmodule AbsintheUtils.Helpers.SortingTest do
   use ExUnit.Case, async: true
 
-  alias AbsintheUtils.Helpers.Sort
+  alias AbsintheUtils.Helpers.Sorting
 
-  doctest AbsintheUtils.Helpers.Sort
+  doctest AbsintheUtils.Helpers.Sorting
 
   describe "sort_alike" do
     test "empty lists" do
-      assert [] === Sort.sort_alike([], [])
+      assert [] === Sorting.sort_alike([], [])
     end
 
     test "unsorted empty" do
-      assert [] === Sort.sort_alike([], [1, 2, 3])
+      assert [nil, nil, nil] === Sorting.sort_alike([], [1, 2, 3])
     end
 
     test "unsorted contains unknown elements" do
-      assert_raise KeyError, fn ->
-        Sort.sort_alike([8], [1, 2, 3])
-      end
+      assert [nil, nil, nil] === Sorting.sort_alike([8], [1, 2, 3])
     end
 
-    test "sorted contains more elements" do
-      assert [1] === Sort.sort_alike([1], [1, 2, 3])
+    test "sorted contains more elements than unsorted" do
+      assert [nil, 2, nil] === Sorting.sort_alike([2], [1, 2, 3])
     end
 
     test "all elements match" do
-      assert [2, 3, 1] === Sort.sort_alike([1, 2, 3], [2, 3, 1])
+      assert [2, 3, 1] === Sorting.sort_alike([1, 2, 3], [2, 3, 1])
+    end
+
+    test "unsorted contains duplicates" do
+      assert [:a, :b] === Sorting.sort_alike([:b, :a, :b], [:a, :b])
+    end
+
+    test "sorted contains duplicates" do
+      assert [:b, :a, :b] === Sorting.sort_alike([:b, :a], [:b, :a, :b])
     end
 
     test "with unsorted mapper" do
@@ -34,7 +40,7 @@ defmodule AbsintheUtils.Helpers.SortTest do
                %{id: 1},
                %{id: 2}
              ] ===
-               Sort.sort_alike(
+               Sorting.sort_alike(
                  [
                    %{id: 1},
                    %{id: 2},
@@ -51,7 +57,7 @@ defmodule AbsintheUtils.Helpers.SortTest do
                %{id: 3},
                %{id: 1}
              ] ===
-               Sort.sort_alike(
+               Sorting.sort_alike(
                  [
                    %{id: 1},
                    %{id: 2},
@@ -65,20 +71,6 @@ defmodule AbsintheUtils.Helpers.SortTest do
                  & &1.id,
                  & &1.id
                )
-    end
-  end
-
-  describe "map_enum_to_index" do
-    test "empty list" do
-      assert %{} === Sort.map_enum_to_index([])
-    end
-
-    test "no mapper" do
-      assert %{
-               1 => 0,
-               2 => 1,
-               3 => 2
-             } === Sort.map_enum_to_index([1, 2, 3])
     end
   end
 end

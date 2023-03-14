@@ -19,3 +19,9 @@ end
 ```
 
 Documentation can be found in [HexDocs](https://hexdocs.pm/absinthe_utils).
+
+# Main features
+
+- `AbsintheUtils.Middleware.ArgLoader`: Middleware for loading entities in `field` arguments.
+- `AbsintheUtils.Middleware.DeprecatedArgs`: Middleware for handling deprecated or renamed `field`
+  arguments (`arg`).

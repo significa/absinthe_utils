@@ -29,7 +29,7 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
     end
   end
 
-  describe "uuid decode" do
+  describe "input" do
     test "valid uuid" do
       assert {:ok,
               %{
@@ -79,7 +79,7 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
     end
   end
 
-  describe "uuid endecode" do
+  describe "output" do
     test "valid uuid" do
       assert {:ok,
               %{

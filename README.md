@@ -1,27 +1,31 @@
 # Absinthe Utils
 
-Collection of utilities for [absinthe](https://hexdocs.pm/absinthe/).
+Collection of utilities for [absinthe](https://hexdocs.pm/absinthe).
 
-[![absinthe_utils in hex.pm](https://img.shields.io/hexpm/v/absinthe_utils?style=flat)](https://hex.pm/packages/absinthe_utils)
-[![absinthe_utils documentation](https://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/absinthe_utils/)
+[![absinthe_utils on hex.pm](https://img.shields.io/hexpm/v/absinthe_utils?style=flat)][hexpm]
+[![absinthe_utils documentation](https://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)][hexdocs]
 
 ## Installation
 
-[Available in Hex](https://hex.pm/docs/publish), the package can be installed
+[Available in Hex][hexdocs], the package can be installed
 by adding `absinthe_utils` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:absinthe_utils, "~> 0.0.1"}
+    # Check the releases page for the desired version (and use sigils accordingly, ex: "~>").
+    {:absinthe_utils, ">= 0.0.1"}
   ]
 end
 ```
 
-Documentation can be found in [HexDocs](https://hexdocs.pm/absinthe_utils).
+Documentation can be found in [HexDocs].
 
 # Main features
 
 - `AbsintheUtils.Middleware.ArgLoader`: Middleware for loading entities in `field` arguments.
 - `AbsintheUtils.Middleware.DeprecatedArgs`: Middleware for handling deprecated or renamed `field`
   arguments (`arg`).
+
+[hexpm]: https://hex.pm/packages/absinthe_utils
+[hexdocs]: https://hexdocs.pm/absinthe_utils

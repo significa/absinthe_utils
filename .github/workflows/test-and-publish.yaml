@@ -1,0 +1,18 @@
+name: Test and publish
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+jobs:
+  test-and-publish:
+    name: Test and publish
+    uses: significa/actions/.github/workflows/elixir-library.yaml@main
+    secrets:
+      HEX_API_KEY: ${{ secrets.HEX_API_KEY }}

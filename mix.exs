@@ -11,7 +11,7 @@ defmodule AbsintheUtils.MixProject do
     [
       app: :absinthe_utils,
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @source_url,

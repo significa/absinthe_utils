@@ -33,5 +33,14 @@ defmodule AbsintheUtils.Scalars.EctoUUID do
 
   defp decode(_), do: :error
 
-  defp encode(value), do: value
+  defp encode(value) do
+    case UUID.cast(value) do
+      :error ->
+        raise Absinthe.SerializationError,
+              "Could not serialize term #{inspect(value)} as type UUID."
+
+      {:ok, uuid} ->
+        uuid
+    end
+  end
 end

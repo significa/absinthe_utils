@@ -1,29 +1,33 @@
 defmodule AbsintheUtilsTest.Scalars.UUIDTest do
   use ExUnit.Case, async: true
 
+  @sample_uuid "857b262d-a8c7-48b5-9ee3-06d735136693"
+
   defmodule TestSchema do
     use Absinthe.Schema
 
     import_types(AbsintheUtils.Scalars.EctoUUID)
 
+  @sample_uuid "857b262d-a8c7-48b5-9ee3-06d735136693"
+
     query do
-      field :query_with_uuid_argument, :boolean do
+      field :query_with_uuid_argument, :string do
         arg(:uuid, :uuid)
 
-        resolve(fn _, _, _ ->
-          {:ok, true}
+        resolve(fn _, params, _ ->
+          {:ok, params.uuid}
         end)
       end
 
       field :query_returns_uuid, :uuid do
         resolve(fn _, _, _ ->
-          {:ok, Ecto.UUID.generate()}
+          {:ok, @sample_uuid}
         end)
       end
 
-      field :query_does_not_return_uuid, :uuid do
+      field :query_returns_invalid_uuid, :uuid do
         resolve(fn _, _, _ ->
-          {:ok, "string"}
+          {:ok, "invalid_uuid"}
         end)
       end
     end
@@ -34,7 +38,7 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
       assert {:ok,
               %{
                 data: %{
-                  "queryWithUUIDArgument" => true
+                  "queryWithUUIDArgument" => @sample_uuid
                 }
               }} ===
                Absinthe.run(
@@ -49,33 +53,35 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
                  """,
                  TestSchema,
                  variables: %{
-                   "uuid" => "68333b2e-51f8-4898-affb-2608949bf71a"
+                   "uuid" => @sample_uuid
                  }
                )
     end
 
     test "invalid uuid" do
       assert {:ok,
-      %{
-        errors: [%{
-          message: "Argument \"uuid\" has invalid value $uuid."
-        }]
-      }} =
-       Absinthe.run(
-         """
-           query (
-             $uuid: UUID
-           ) {
-            queryWithUUIDArgument(
-              uuid: $uuid
-             )
-           }
-         """,
-         TestSchema,
-         variables: %{
-           "uuid" => "invalid_uuid"
-         }
-       )
+              %{
+                errors: [
+                  %{
+                    message: "Argument \"uuid\" has invalid value $uuid."
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 """
+                   query (
+                     $uuid: UUID
+                   ) {
+                    queryWithUUIDArgument(
+                      uuid: $uuid
+                     )
+                   }
+                 """,
+                 TestSchema,
+                 variables: %{
+                   "uuid" => "invalid_uuid"
+                 }
+               )
     end
   end
 
@@ -84,9 +90,9 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
       assert {:ok,
               %{
                 data: %{
-                  "queryReturnsUUID" => uuid
+                  "queryReturnsUUID" => @sample_uuid
                 }
-              }} =
+              }} ===
                Absinthe.run(
                  """
                    query {
@@ -95,28 +101,18 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
                  """,
                  TestSchema
                )
-
-      assert Ecto.UUID.cast!(uuid)
     end
 
     test "invalid uuid" do
-      assert {:ok,
-              %{
-                data: %{
-                  "queryDoesNotReturnUUID" => uuid
-                }
-              }} =
-               Absinthe.run(
-                 """
-                   query {
-                    queryDoesNotReturnUUID
-                   }
-                 """,
-                 TestSchema
-               )
-
-      assert_raise Ecto.CastError, fn ->
-        Ecto.UUID.cast!(uuid)
+      assert_raise Absinthe.SerializationError, fn ->
+        Absinthe.run(
+          """
+            query {
+             queryReturnsInvalidUUID
+            }
+          """,
+          TestSchema
+        )
       end
     end
   end

@@ -1,17 +1,19 @@
 defmodule AbsintheUtils.Scalars.JSON do
   @moduledoc """
-  The Json scalar type allows arbitrary JSON values to be passed in and out.
+  The JSON scalar type allows arbitrary JSON values to be passed in and out.
   Requires `{ :jason, "~> 1.1" }` package: https://github.com/michalmuskala/jason
 
   Based in the recipe from Absinthe
   https://github.com/absinthe-graphql/absinthe/wiki/Scalar-Recipes#json-using-jason
+
+  Note that even if you use `non_null(:json)` a string of null value (`"null"`) is still accepted.
   """
   use Absinthe.Schema.Notation
 
-  scalar :json, name: "Json" do
+  scalar :json, name: "JSON" do
     description("""
-    The `Json` scalar type represents arbitrary json string data, represented as UTF-8
-    character sequences. The Json type is most often used to represent a free-form
+    The `JSON` scalar type represents arbitrary JSON string data, represented as UTF-8
+    character sequences. The JSON type is most often used to represent a free-form
     human-readable json string.
     """)
 

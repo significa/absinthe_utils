@@ -36,5 +36,14 @@ defmodule AbsintheUtils.Scalars.JSON do
 
   defp decode(_), do: :error
 
-  defp encode(value), do: value
+  defp encode(value) do
+    case Jason.encode(value) do
+      {:ok, _} ->
+        value
+
+      {:error, _} ->
+        raise Absinthe.SerializationError,
+              "Could not serialize term #{inspect(value)} as type UUID."
+    end
+  end
 end

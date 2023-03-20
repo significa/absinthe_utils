@@ -15,6 +15,17 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
+    @sample_data %{
+      "users" => [
+        %{
+          "id" => 1234,
+          "name" => "Sample user name",
+          "is_active" => true,
+          "pet" => nil
+        }
+      ]
+    }
+
     import_types(AbsintheUtils.Scalars.JSON)
 
     enum :test_result do
@@ -25,6 +36,9 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
 
     object :sample_json_fields do
       field(:null_value, :json)
+      field(:invalid_json, non_null(:json))
+      field(:string_value, non_null(:json))
+      field(:empty_string, non_null(:json))
       field(:empty_array, non_null(:json))
       field(:empty_object, non_null(:json))
       field(:sample_object, non_null(:json))
@@ -57,18 +71,12 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
             :ok,
             %{
               null_field: nil,
+              invalid_json: "{invalid json}",
+              string_value: "strings are valid JSON",
+              empty_string: "",
               empty_array: [],
               empty_object: %{},
-              sample_object: %{
-                "users" => [
-                  %{
-                    "id" => 1234,
-                    "name" => "Sample user name",
-                    "is_active" => true,
-                    "pet" => nil
-                  }
-                ]
-              }
+              sample_object: @sample_data
             }
           }
         end)
@@ -199,7 +207,7 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
                  """,
                  TestSchema,
                  variables: %{
-                   "data" => "invalid JSON"
+                   "data" => "{invalid JSON}"
                  }
                )
     end
@@ -213,7 +221,10 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
                  "sampleJsonReturn" => %{
                    "empty_array" => [],
                    "empty_object" => %{},
+                   "invalid_json" => "{invalid json}",
                    "null_value" => nil,
+                   "string_value" => "strings are valid JSON",
+                   "empty_string" => "",
                    "sample_object" => sample_object
                  }
                }
@@ -224,6 +235,9 @@ defmodule AbsintheUtilsTest.Scalars.JSONTest do
                 query {
                   sampleJsonReturn {
                     null_value
+                    invalid_json
+                    string_value
+                    empty_string
                     empty_array
                     empty_object
                     sample_object

@@ -8,7 +8,7 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
 
     import_types(AbsintheUtils.Scalars.EctoUUID)
 
-  @sample_uuid "857b262d-a8c7-48b5-9ee3-06d735136693"
+    @sample_uuid "857b262d-a8c7-48b5-9ee3-06d735136693"
 
     query do
       field :query_with_uuid_argument, :string do

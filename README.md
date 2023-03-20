@@ -26,6 +26,8 @@ Documentation can be found in [HexDocs].
 - `AbsintheUtils.Middleware.ArgLoader`: Middleware for loading entities in `field` arguments.
 - `AbsintheUtils.Middleware.DeprecatedArgs`: Middleware for handling deprecated or renamed `field`
   arguments (`arg`).
+- `AbsintheUtils.Scalars.JSON`: JSON scalar.
+- `AbsintheUtils.Scalars.UUID`: UUID scalar.
 
 [hexpm]: https://hex.pm/packages/absinthe_utils
 [hexdocs]: https://hexdocs.pm/absinthe_utils

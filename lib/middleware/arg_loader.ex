@@ -26,7 +26,6 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         %{
           id: [
             new_name: :user,
-            is_list: true,
             load_function: &get_user_by_id/1
           ]
         }

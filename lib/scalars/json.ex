@@ -1,9 +1,4 @@
-jason_version = Application.spec(:jason, :vsn)
-
-if jason_version &&
-     jason_version
-     |> to_string()
-     |> Version.compare("1.1.0") == :gt do
+if Application.spec(:jason) do
   defmodule AbsintheUtils.Scalars.JSON do
     @moduledoc """
     The JSON scalar type allows arbitrary JSON values to be passed in and out.

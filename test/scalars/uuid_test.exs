@@ -6,7 +6,7 @@ defmodule AbsintheUtilsTest.Scalars.UUIDTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    import_types(AbsintheUtils.Scalars.EctoUUID)
+    import_types(AbsintheUtils.Scalars.UUID)
 
     @sample_uuid "857b262d-a8c7-48b5-9ee3-06d735136693"
 

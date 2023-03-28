@@ -1,18 +1,4 @@
-is_ecto_loaded =
-  try do
-    if function_exported?(Code, :ensure_compiled!, 1) do
-      Code.ensure_compiled!(Ecto.UUID)
-    else
-      {:module, _module} = Code.ensure_compiled(Ecto.UUID)
-    end
-
-    true
-  rescue
-    _ ->
-      false
-  end
-
-if is_ecto_loaded do
+if Application.get_env(:absinthe_utils, :compile_uuid_scalar, true) do
   defmodule AbsintheUtils.Scalars.UUID do
     @moduledoc """
     The UUID scalar type allows UUID compliant strings to be passed in and out.

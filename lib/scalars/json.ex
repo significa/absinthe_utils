@@ -1,18 +1,4 @@
-is_jason_loaded =
-  try do
-    if function_exported?(Code, :ensure_compiled!, 1) do
-      Code.ensure_compiled!(Jason)
-    else
-      {:module, _module} = Code.ensure_compiled(Jason)
-    end
-
-    true
-  rescue
-    _ ->
-      false
-  end
-
-if is_jason_loaded do
+if Application.get_env(:absinthe_utils, :compile_json_scalar, true) do
   defmodule AbsintheUtils.Scalars.JSON do
     @moduledoc """
     The JSON scalar type allows arbitrary JSON values to be passed in and out.

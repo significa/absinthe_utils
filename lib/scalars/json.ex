@@ -1,60 +1,70 @@
-case Code.ensure_loaded(Jason) do
-  {:module, _} ->
-    defmodule AbsintheUtils.Scalars.JSON do
-      @moduledoc """
-      The JSON scalar type allows arbitrary JSON values to be passed in and out.
-      Requires `{ :jason, ">= 1.1" }` package: https://github.com/michalmuskala/jason
+is_jason_loaded =
+  try do
+    if function_exported?(Code, :ensure_compiled!, 1) do
+      Code.ensure_compiled!(Jason)
+    else
+      {:module, _module} = Code.ensure_compiled(Jason)
+    end
 
-      Based in the
-      [recipes on Absinthe's wiki](https://github.com/absinthe-graphql/absinthe/wiki/Scalar-Recipes)
+    true
+  rescue
+    _ ->
+      false
+  end
 
-      Note that even if you use `non_null(:json)` a string of null value (`"null"`) is still accepted.
+if is_jason_loaded do
+  defmodule AbsintheUtils.Scalars.JSON do
+    @moduledoc """
+    The JSON scalar type allows arbitrary JSON values to be passed in and out.
+    Requires `{ :jason, ">= 1.1" }` package: https://github.com/michalmuskala/jason
 
-      **Usage:**
+    Based in the
+    [recipes on Absinthe's wiki](https://github.com/absinthe-graphql/absinthe/wiki/Scalar-Recipes)
 
-      Import the type in your schema `import_types(AbsintheUtils.Scalars.JSON)` and you will be able
-      to use the `:json` type.
-      """
-      use Absinthe.Schema.Notation
+    Note that even if you use `non_null(:json)` a string of null value (`"null"`) is still accepted.
 
-      scalar :json, name: "JSON" do
-        description("""
-        The `JSON` scalar type represents arbitrary JSON string data, represented as UTF-8
-        character sequences. The JSON type is most often used to represent a free-form
-        human-readable json string.
-        """)
+    **Usage:**
 
-        serialize(&encode/1)
-        parse(&decode/1)
-      end
+    Import the type in your schema `import_types(AbsintheUtils.Scalars.JSON)` and you will be able
+    to use the `:json` type.
+    """
+    use Absinthe.Schema.Notation
 
-      @spec decode(Absinthe.Blueprint.Input.String.t()) :: {:ok, term()} | :error
-      @spec decode(Absinthe.Blueprint.Input.Null.t()) :: {:ok, nil}
-      defp decode(%Absinthe.Blueprint.Input.String{value: value}) do
-        case Jason.decode(value) do
-          {:ok, result} -> {:ok, result}
-          _ -> :error
-        end
-      end
+    scalar :json, name: "JSON" do
+      description("""
+      The `JSON` scalar type represents arbitrary JSON string data, represented as UTF-8
+      character sequences. The JSON type is most often used to represent a free-form
+      human-readable json string.
+      """)
 
-      defp decode(%Absinthe.Blueprint.Input.Null{}) do
-        {:ok, nil}
-      end
+      serialize(&encode/1)
+      parse(&decode/1)
+    end
 
-      defp decode(_), do: :error
-
-      defp encode(value) do
-        case Jason.encode(value) do
-          {:ok, _} ->
-            value
-
-          {:error, _} ->
-            raise Absinthe.SerializationError,
-                  "Could not serialize term #{inspect(value)} as type UUID."
-        end
+    @spec decode(Absinthe.Blueprint.Input.String.t()) :: {:ok, term()} | :error
+    @spec decode(Absinthe.Blueprint.Input.Null.t()) :: {:ok, nil}
+    defp decode(%Absinthe.Blueprint.Input.String{value: value}) do
+      case Jason.decode(value) do
+        {:ok, result} -> {:ok, result}
+        _ -> :error
       end
     end
 
-  _ ->
-    nil
+    defp decode(%Absinthe.Blueprint.Input.Null{}) do
+      {:ok, nil}
+    end
+
+    defp decode(_), do: :error
+
+    defp encode(value) do
+      case Jason.encode(value) do
+        {:ok, _} ->
+          value
+
+        {:error, _} ->
+          raise Absinthe.SerializationError,
+                "Could not serialize term #{inspect(value)} as type UUID."
+      end
+    end
+  end
 end

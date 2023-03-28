@@ -14,5 +14,7 @@ jobs:
   test-and-publish:
     name: Test and publish
     uses: significa/actions/.github/workflows/elixir-library.yaml@main
+    with:
+      mix-compile-opts: ""
     secrets:
       HEX_API_KEY: ${{ secrets.HEX_API_KEY }}

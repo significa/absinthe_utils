@@ -1,7 +1,12 @@
 is_ecto_loaded =
   try do
-    Code.ensure_compiled!(Ecto.UUID)
-    true
+    if function_exported?(Code, :ensure_compiled, 1) do
+      Code.ensure_compiled!(Ecto.UUID)
+      true
+    else
+      {:module, _module} = Code.ensure_compiled(Ecto.UUID)
+      true
+    end
   rescue
     _ ->
       false

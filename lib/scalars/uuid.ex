@@ -1,4 +1,13 @@
-if :jason in Mix.Project.deps_apps() do
+is_ecto_loaded =
+  try do
+    Code.ensure_compiled!(Ecto.UUID)
+    true
+  rescue
+    _ ->
+      false
+  end
+
+if is_ecto_loaded do
   defmodule AbsintheUtils.Scalars.UUID do
     @moduledoc """
     The UUID scalar type allows UUID compliant strings to be passed in and out.

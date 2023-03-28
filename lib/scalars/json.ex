@@ -1,4 +1,13 @@
-if :ecto in Mix.Project.deps_apps() do
+is_jason_loaded =
+  try do
+    Code.ensure_compiled!(Jason)
+    true
+  rescue
+    _ ->
+      false
+  end
+
+if is_jason_loaded do
   defmodule AbsintheUtils.Scalars.JSON do
     @moduledoc """
     The JSON scalar type allows arbitrary JSON values to be passed in and out.

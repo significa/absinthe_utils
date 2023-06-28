@@ -9,8 +9,8 @@ if Application.get_env(:absinthe_utils, :compile_uuid_scalar, true) do
 
     **Usage:**
 
-    Import the type in your schema `import_types(AbsintheUtils.Scalars.JSON)` and you will be able
-    to use the `:json` type.
+    Import the type in your schema `import_types(AbsintheUtils.Scalars.UUID)` and you will be able
+    to use the `:uuid` type.
     """
     use Absinthe.Schema.Notation
 

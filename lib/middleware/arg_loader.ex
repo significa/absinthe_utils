@@ -5,10 +5,11 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   This middleware should be defined before `resolve`. It will manipulate the arguments
   before they are passed to the resolver function.
 
-  As configuration it accepts a map of original argument names to a keyword list, containing:
+  As configuration it accepts a map of original argument names (or path) to a keyword list, containing:
 
-  - `new_name`: the new name to push the loaded entity into.
-    (optional, defaults to `argument_name`).
+  - `new_name`: the new key to push the loaded entity into, can be a list of atoms
+    to push the entity into a nested map.
+    (optional, defaults to the argument name - the key of the map configuration).
   - `load_function`: the function used to load the argument into an entity.
     As an input accepts two arguments:
     - `context`: the context of the current resolution (prior to any modifications of the current middleware).
@@ -82,6 +83,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   @behaviour Absinthe.Middleware
 
   alias AbsintheUtils.Helpers.Errors
+  alias AbsintheUtils.Internal.MapHelpers
 
   @impl true
   def call(
@@ -136,20 +138,54 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     end
   end
 
-  def load_entities(original_resolution, arguments, argument_name, opts)
-      when is_map_key(arguments, argument_name) do
-    load_function = Keyword.fetch!(opts, :load_function)
-    push_to_key = Keyword.get(opts, :new_name, argument_name)
-    nil_is_not_found = Keyword.get(opts, :nil_is_not_found, true)
+  defp load_entities(original_resolution, arguments, argument_name, opts)
+       when is_atom(argument_name) do
+    load_entities(original_resolution, arguments, [argument_name], opts)
+  end
 
-    {input_value, arguments} = Map.pop!(arguments, argument_name)
+  defp load_entities(original_resolution, arguments, argument_keys_path, opts)
+       when is_list(argument_keys_path) do
+    case MapHelpers.safe_pop_in(arguments, argument_keys_path) do
+      {argument_value, popped_arguments} ->
+        case call_load_function(
+               original_resolution,
+               opts,
+               argument_value
+             ) do
+          :not_found ->
+            :not_found
+
+          result ->
+            push_to_keys_path =
+              Keyword.get(opts, :new_name, argument_keys_path)
+              |> List.wrap()
+
+            MapHelpers.recursive_put_in(
+              popped_arguments,
+              push_to_keys_path,
+              result
+            )
+        end
+
+      :error ->
+        arguments
+    end
+  end
+
+  defp load_entities(_original_resolution, arguments, _argument_name, _opts) do
+    arguments
+  end
+
+  defp call_load_function(original_resolution, opts, input_value) do
+    nil_is_not_found = Keyword.get(opts, :nil_is_not_found, true)
+    load_function = Keyword.fetch!(opts, :load_function)
 
     case load_function.(original_resolution, input_value) do
       nil when nil_is_not_found ->
         :not_found
 
       nil ->
-        Map.put(arguments, push_to_key, nil)
+        nil
 
       entities when is_list(entities) and is_list(input_value) ->
         entities = if nil_is_not_found, do: Enum.reject(entities, &is_nil/1), else: entities
@@ -157,15 +193,11 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         if length(entities) != length(input_value) do
           :not_found
         else
-          Map.put(arguments, push_to_key, entities)
+          entities
         end
 
       value ->
-        Map.put(arguments, push_to_key, value)
+        value
     end
-  end
-
-  def load_entities(_original_resolution, arguments, _argument_name, _opts) do
-    arguments
   end
 end

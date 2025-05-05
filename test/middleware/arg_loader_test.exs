@@ -1,4 +1,6 @@
 defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   # use Absinthe.Schema
@@ -78,6 +80,15 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
 
     object :entity_list do
       field(:users, non_null(list_of(:user)))
+    end
+
+    input_object :complex_input_object do
+      field(:user1_id, :id)
+      field(:user2_id, :id)
+    end
+
+    object :complex_output_object do
+      field(:processed_input, :two_entities)
     end
 
     def resolve_params(_, params, _) do
@@ -281,6 +292,32 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
             ],
             user2_id: [
               new_name: :user2,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
+              nil_is_not_found: true
+            ]
+          }
+        )
+
+        resolve(&resolve_params/3)
+      end
+
+      field :complex_input, :complex_output_object do
+        arg(:complex_input_object, :complex_input_object)
+
+        middleware(
+          ArgLoader,
+          %{
+            [:complex_input_object, :user1_id] => [
+              new_name: [:processed_input, :user1],
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
+              nil_is_not_found: true
+            ],
+            [:complex_input_object, :user2_id] => [
+              new_name: [:processed_input, :user2],
               load_function: fn _context, input_value ->
                 SampleRepository.get_user(input_value)
               end,
@@ -1326,6 +1363,49 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                  variables: %{
                    "user1Id" => "unknown",
                    "user2Id" => "unknown"
+                 }
+               )
+    end
+  end
+
+  describe "complex input and output object" do
+    @query """
+      query ($complexInputObject: ComplexInputObject!) {
+        complexInput(complexInputObject: $complexInputObject) {
+          processedInput {
+            user1 {
+              id
+              name
+            }
+            user2 {
+              id
+              name
+            }
+          }
+        }
+      }
+    """
+
+    test "success" do
+      assert {:ok,
+              %{
+                data: %{
+                  "complexInput" => %{
+                    "processedInput" => %{
+                      "user1" => %{"id" => "2", "name" => "Bob"},
+                      "user2" => %{"id" => "1", "name" => "Ally"}
+                    }
+                  }
+                }
+              }} ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "complexInputObject" => %{
+                     "user1Id" => "2",
+                     "user2Id" => "1"
+                   }
                  }
                )
     end

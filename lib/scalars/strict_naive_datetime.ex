@@ -19,6 +19,13 @@ defmodule AbsintheUtils.Scalars.StrictNaiveDateTime do
   @moduledoc """
   #{@description}
 
+  **Usage:**
+
+  Import the type in your schema `import_types(AbsintheUtils.Scalars.StrictNaiveDateTime)` and you will be able
+  to use the `:strict_naive_datetime` type.
+
+  **Acknowledgements:**
+
   Based on the type `naive_datetime` from `Absinthe.Type.Custom`.
   """
 

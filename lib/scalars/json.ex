@@ -4,7 +4,7 @@ if Application.get_env(:absinthe_utils, :compile_json_scalar, true) do
     The JSON scalar type allows arbitrary JSON values to be passed in and out.
     Requires `{ :jason, ">= 1.1" }` package: https://github.com/michalmuskala/jason
 
-    Based in the
+    Based on the
     [recipes on Absinthe's wiki](https://github.com/absinthe-graphql/absinthe/wiki/Scalar-Recipes)
 
     Note that even if you use `non_null(:json)` a string of null value (`"null"`) is still accepted.

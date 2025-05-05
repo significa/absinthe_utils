@@ -10,9 +10,13 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   - `new_name`: the new name to push the loaded entity into.
     (optional, defaults to `argument_name`).
   - `load_function`: the function used to load the argument into an entity.
-    As an input accepts one single argument: the input received in the value of `argument_name`.
+    As an input accepts two arguments:
+    - `context`: the context of the current resolution (prior to any modifications of the current middleware).
+    - `input_value`: the value received in the value of `argument_name`.
     The function should return the entity or a list of entities.
     `nil` or an empty list when not found .
+  - `nil_is_not_found`: whether to consider `nil` as a not found value.
+    (optional, defaults to `true`).
 
   ## Examples
 
@@ -27,7 +31,10 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         %{
           id: [
             new_name: :user,
-            load_function: &get_user_by_id/1
+            load_function: fn _context, id ->
+              get_user_by_id(id)
+            end,
+            nil_is_not_found: false
           ]
         }
       )
@@ -39,7 +46,6 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   ```
 
   This will define a `user` query that accepts an `id` input. Before calling the resolver,
-  it will load the user via `get_user_by_id(id)` into the `user` argument, removing `id`.
 
   `ArgLoader` can also be used to load a `list_of` arguments:
 
@@ -53,7 +59,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         %{
           ids: [
             new_name: :users,
-            load_function: fn ids ->
+            load_function: fn _context, ids ->
               ids
               |> get_users_by_id()
               |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
@@ -88,6 +94,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         {arguments, []},
         fn {argument_name, argument_opts}, {arguments, not_found_arguments} ->
           case load_entities(
+                 resolution,
                  arguments,
                  argument_name,
                  argument_opts
@@ -129,7 +136,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     end
   end
 
-  def load_entities(arguments, argument_name, opts)
+  def load_entities(original_resolution, arguments, argument_name, opts)
       when is_map_key(arguments, argument_name) do
     load_function = Keyword.fetch!(opts, :load_function)
     push_to_key = Keyword.get(opts, :new_name, argument_name)
@@ -137,7 +144,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
     {input_value, arguments} = Map.pop!(arguments, argument_name)
 
-    case load_function.(input_value) do
+    case load_function.(original_resolution, input_value) do
       nil when nil_is_not_found ->
         :not_found
 
@@ -158,7 +165,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     end
   end
 
-  def load_entities(arguments, _argument_identifier, _opts) do
+  def load_entities(_original_resolution, arguments, _argument_name, _opts) do
     arguments
   end
 end

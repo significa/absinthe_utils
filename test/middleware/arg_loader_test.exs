@@ -93,7 +93,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             id: [
               new_name: :user,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: false
             ]
           }
@@ -110,7 +112,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             id: [
               new_name: :user,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: true
             ]
           }
@@ -127,7 +131,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             id: [
               new_name: :user,
-              load_function: &SampleRepository.get_user/1
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end
               # Using default nil_is_not_found
             ]
           }
@@ -144,7 +150,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: &SampleRepository.get_optional_users/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_optional_users(input_value)
+              end,
               nil_is_not_found: false
             ]
           }
@@ -161,7 +169,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: &SampleRepository.get_users/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_users(input_value)
+              end,
               nil_is_not_found: true
             ]
           }
@@ -178,7 +188,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: &SampleRepository.get_users/1
+              load_function: fn _context, input_value ->
+                SampleRepository.get_users(input_value)
+              end
               # Using default nil_is_not_found
             ]
           }
@@ -195,7 +207,9 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: &SampleRepository.get_unique_users/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_unique_users(input_value)
+              end,
               nil_is_not_found: false
             ]
           }
@@ -212,7 +226,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: fn ids ->
+              load_function: fn _context, ids ->
                 ids
                 |> SampleRepository.get_users()
                 |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
@@ -233,12 +247,16 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             user1_id: [
               new_name: :user1,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: false
             ],
             user2_id: [
               new_name: :user2,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: false
             ]
           }
@@ -256,12 +274,16 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             user1_id: [
               new_name: :user1,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: true
             ],
             user2_id: [
               new_name: :user2,
-              load_function: &SampleRepository.get_user/1,
+              load_function: fn _context, input_value ->
+                SampleRepository.get_user(input_value)
+              end,
               nil_is_not_found: true
             ]
           }

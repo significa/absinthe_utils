@@ -113,10 +113,17 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
         | arguments: arguments
       }
     else
+      arg_names =
+        not_found_arguments
+        |> Enum.map_join(", ", fn arg_name ->
+          arg_name
+          |> to_string()
+          |> Absinthe.Utils.camelize(lower: true)
+        end)
+
       Errors.put_error(
         resolution,
-        "The entity(ies) provided in the following arg(s), could not be found: " <>
-          Enum.join(not_found_arguments, ", "),
+        "The entity(ies) provided in the following arg(s), could not be found: #{arg_names}",
         "NOT_FOUND"
       )
     end

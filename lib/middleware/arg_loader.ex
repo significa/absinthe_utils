@@ -48,6 +48,8 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   This will define a `user` query that accepts an `id` input. Before calling the resolver,
 
+  ### List of entities
+
   `ArgLoader` can also be used to load a `list_of` arguments:
 
   ```
@@ -75,6 +77,40 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
     end
   end
   ```
+
+  ### Deep nested arguments
+
+  Using `ArgLoader` to load and rename deep nested arguments:
+
+  ```
+  input_object :complex_input_object do
+    field(:user_id, :id)
+  end
+
+  query do
+    field :users, :boolean do
+      arg(:input, :complex_input_object)
+
+      middleware(
+        ArgLoader,
+        %{
+          [:input, :user_id] => [
+            new_name: [:loaded_entities, :user],
+            load_function: fn _context, user_id ->
+              get_user_by_id(user_id)
+            end
+          ]
+        }
+      )
+
+      resolve(fn _, params, _ ->
+        # params.loaded_entities.user will contain the loaded user
+        {:ok, true}
+      end)
+    end
+  end
+  ```
+
 
   Note the use of `AbsintheUtils.Helpers.Sorting.sort_alike/2` to ensure the returned list of
   entities from the repository is sorted according to the user's input.

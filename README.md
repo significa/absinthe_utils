@@ -28,6 +28,7 @@ Documentation can be found in [HexDocs].
   arguments (`arg`).
 - `AbsintheUtils.Scalars.JSON`: JSON scalar.
 - `AbsintheUtils.Scalars.UUID`: UUID scalar.
+- `AbsintheUtils.Scalars.StrictNaiveDateTime`: NaiveDatetime that does not accept ISO8601 with offset.
 
 [hexpm]: https://hex.pm/packages/absinthe_utils
 [hexdocs]: https://hexdocs.pm/absinthe_utils

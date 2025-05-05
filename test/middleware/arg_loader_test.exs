@@ -5,8 +5,8 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
 
   defmodule SampleRepository do
     @moduledoc """
-    This is a demo api used as a "mock" called by resolve_paramss.
-    This test case would probably be better tested with real mocks on the resolve_paramss
+    This is a demo api used as a "mock" called by resolve_params.
+    This test case would probably be better tested with real mocks on the resolve_params
      so we could assert calls and have more control of the flow.
      But for the ease of development this was chosen for now.
     """
@@ -34,6 +34,8 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
     Demo multi-user getter that returns an user for each id provided.
     If not found, it will not be returned.
     """
+    def get_users(nil), do: []
+
     def get_users(ids) do
       ids
       |> get_optional_users()
@@ -70,8 +72,8 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
     end
 
     object :two_entities do
-      field(:user1, non_null(:user))
-      field(:user2, non_null(:user))
+      field(:user1, :user)
+      field(:user2, :user)
     end
 
     object :entity_list do
@@ -193,7 +195,8 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
           %{
             ids: [
               new_name: :users,
-              load_function: &SampleRepository.get_unique_users/1
+              load_function: &SampleRepository.get_unique_users/1,
+              nil_is_not_found: false
             ]
           }
         )
@@ -201,62 +204,71 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
         resolve(&resolve_params/3)
       end
 
-      # field :users, non_null(list_of(:user)) do
-      #   arg(:ids, non_null(list_of(:id)))
+      field :required_entities_order_preserved, :entity_list do
+        arg(:ids, non_null(list_of(:id)))
 
-      #   middleware(
-      #     ArgLoader,
-      #     %{
-      #       ids: [
-      #         new_name: :users,
-      #         load_function: &SampleRepository.get_users/1
-      #       ]
-      #     }
-      #   )
+        middleware(
+          ArgLoader,
+          %{
+            ids: [
+              new_name: :users,
+              load_function: fn ids ->
+                ids
+                |> SampleRepository.get_users()
+                |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
+              end
+            ]
+          }
+        )
 
-      #   resolve(&resolve_params/3)
-      # end
+        resolve(&resolve_params/3)
+      end
 
-      # field :unique_users_order_preserved, non_null(list_of(:user)) do
-      #   arg(:ids, non_null(list_of(:id)))
+      field :two_optional_entities, :two_entities do
+        arg(:user1_id, :id)
+        arg(:user2_id, :id)
 
-      #   middleware(
-      #     ArgLoader,
-      #     %{
-      #       ids: [
-      #         new_name: :users,
-      #         load_function: fn ids ->
-      #           ids
-      #           |> SampleRepository.get_users()
-      #           |> AbsintheUtils.Helpers.Sorting.sort_alike(ids, & &1.id)
-      #         end
-      #       ]
-      #     }
-      #   )
+        middleware(
+          ArgLoader,
+          %{
+            user1_id: [
+              new_name: :user1,
+              load_function: &SampleRepository.get_user/1,
+              nil_is_not_found: false
+            ],
+            user2_id: [
+              new_name: :user2,
+              load_function: &SampleRepository.get_user/1,
+              nil_is_not_found: false
+            ]
+          }
+        )
 
-      #   resolve(&resolve_params/3)
-      # end
+        resolve(&resolve_params/3)
+      end
 
-      # field :two_entities, non_null(list_of(:user)) do
-      #   arg(:user1_id, :id)
-      #   arg(:user2_id, :id)
+      field :two_required_entities, :two_entities do
+        arg(:user1_id, :id)
+        arg(:user2_id, :id)
 
-      #   middleware(
-      #     ArgLoader,
-      #     %{
-      #       user1_id: [
-      #         new_name: :user1,
-      #         load_function: &SampleRepository.get_user/1
-      #       ],
-      #       user2_id: [
-      #         new_name: :user2,
-      #         load_function: &SampleRepository.get_user/1
-      #       ]
-      #     }
-      #   )
+        middleware(
+          ArgLoader,
+          %{
+            user1_id: [
+              new_name: :user1,
+              load_function: &SampleRepository.get_user/1,
+              nil_is_not_found: true
+            ],
+            user2_id: [
+              new_name: :user2,
+              load_function: &SampleRepository.get_user/1,
+              nil_is_not_found: true
+            ]
+          }
+        )
 
-      #   resolve(&resolve_params/3)
-      # end
+        resolve(&resolve_params/3)
+      end
     end
   end
 
@@ -590,7 +602,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
 
-    test "mixed- valid and not found" do
+    test "mixed - valid and not found" do
       assert {:ok,
               %{
                 data: %{
@@ -710,7 +722,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
 
-    test "mixed- valid and not found" do
+    test "mixed - valid and not found" do
       assert {:ok,
               %{
                 errors: [
@@ -892,6 +904,26 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
 
+    test "success - duplicate ids" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: ids",
+                    extensions: %{code: "NOT_FOUND"}
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["1", "1"]
+                 }
+               )
+    end
+
     test "nil input list" do
       assert {:ok,
               %{
@@ -958,7 +990,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
 
-    test "mixed- valid and not found" do
+    test "mixed - valid and not found" do
       assert {:ok,
               %{
                 errors: [
@@ -978,371 +1010,302 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
   end
+
+  describe "required entities - order preserved" do
+    @query """
+      query ($ids: [ID]!) {
+        requiredEntitiesOrderPreserved(
+          ids: $ids
+        ) {
+          users {
+            id
+            name
+          }
+        }
+      }
+    """
+
+    test "success" do
+      assert {:ok,
+              %{
+                data: %{
+                  "requiredEntitiesOrderPreserved" => %{
+                    "users" => [
+                      %{"id" => "2", "name" => "Bob"},
+                      %{"id" => "1", "name" => "Ally"}
+                    ]
+                  }
+                }
+              }} ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["2", "1"]
+                 }
+               )
+    end
+
+    test "success - duplicate ids" do
+      assert {:ok,
+              %{
+                data: %{
+                  "requiredEntitiesOrderPreserved" => %{
+                    "users" => [
+                      %{"id" => "1", "name" => "Ally"},
+                      %{"id" => "2", "name" => "Bob"},
+                      %{"id" => "1", "name" => "Ally"}
+                    ]
+                  }
+                }
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["1", "2", "1"]
+                 }
+               )
+    end
+
+    test "nil element id" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    extensions: %{code: "NOT_FOUND"},
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: ids"
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => [nil]
+                 }
+               )
+    end
+
+    test "not found" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    extensions: %{code: "NOT_FOUND"},
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: ids"
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["unknown"]
+                 }
+               )
+    end
+
+    test "mixed - valid and not found" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    extensions: %{code: "NOT_FOUND"},
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: ids"
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "ids" => ["unknown", "1"]
+                 }
+               )
+    end
+  end
+
+  describe "two optional entities" do
+    @query """
+      query (
+        $user1Id: ID
+        $user2Id: ID
+      ) {
+        twoOptionalEntities (
+          user1Id: $user1Id
+          user2Id: $user2Id
+        ) {
+          user1 {
+            id
+            name
+          }
+          user2 {
+            id
+            name
+          }
+        }
+      }
+    """
+
+    test "success" do
+      assert {
+               :ok,
+               %{
+                 data: %{
+                   "twoOptionalEntities" => %{
+                     "user1" => %{"id" => "2", "name" => "Bob"},
+                     "user2" => %{"id" => "1", "name" => "Ally"}
+                   }
+                 }
+               }
+             } ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => "2",
+                   "user2Id" => "1"
+                 }
+               )
+    end
+
+    test "success - one not found" do
+      assert {
+               :ok,
+               %{
+                 data: %{
+                   "twoOptionalEntities" => %{
+                     "user1" => nil,
+                     "user2" => %{"id" => "1", "name" => "Ally"}
+                   }
+                 }
+               }
+             } =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => nil,
+                   "user2Id" => "1"
+                 }
+               )
+    end
+
+    test "success - both not found" do
+      assert {
+               :ok,
+               %{
+                 data: %{
+                   "twoOptionalEntities" => %{
+                     "user1" => nil,
+                     "user2" => nil
+                   }
+                 }
+               }
+             } =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => "unknown",
+                   "user2Id" => "unknown"
+                 }
+               )
+    end
+  end
+
+  describe "two required entities" do
+    @query """
+      query (
+        $user1Id: ID
+        $user2Id: ID
+      ) {
+        twoRequiredEntities (
+          user1Id: $user1Id
+          user2Id: $user2Id
+        ) {
+          user1 {
+            id
+            name
+          }
+          user2 {
+            id
+            name
+          }
+        }
+      }
+    """
+
+    test "success" do
+      assert {
+               :ok,
+               %{
+                 data: %{
+                   "twoRequiredEntities" => %{
+                     "user1" => %{"id" => "2", "name" => "Bob"},
+                     "user2" => %{"id" => "1", "name" => "Ally"}
+                   }
+                 }
+               }
+             } ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => "2",
+                   "user2Id" => "1"
+                 }
+               )
+    end
+
+    test "success - one not found" do
+      assert {
+               :ok,
+               %{
+                 errors: [
+                   %{
+                     extensions: %{code: "NOT_FOUND"},
+                     message:
+                       "The entity(ies) provided in the following arg(s), could not be found: user1Id"
+                   }
+                 ]
+               }
+             } =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => "unknown",
+                   "user2Id" => "1"
+                 }
+               )
+    end
+
+    test "success - both not found" do
+      assert {
+               :ok,
+               %{
+                 errors: [
+                   %{
+                     extensions: %{code: "NOT_FOUND"},
+                     message:
+                       "The entity(ies) provided in the following arg(s), could not be found: user2Id, user1Id"
+                   }
+                 ]
+               }
+             } =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "user1Id" => "unknown",
+                   "user2Id" => "unknown"
+                 }
+               )
+    end
+  end
 end
-
-# ####
-
-# describe "loading one argument" do
-#   test "success" do
-#     assert {:ok,
-#             %{
-#               data: %{
-#                 "user" => %{
-#                   "id" => "1",
-#                   "name" => "Ally"
-#                 }
-#               }
-#             }} ===
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $id: ID!
-#                  ) {
-#                   user(
-#                     id: $id
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "id" => "1"
-#                }
-#              )
-#   end
-
-#   test "optional not passed" do
-#     assert {:ok,
-#             %{
-#               data: %{
-#                 "user" => nil
-#               }
-#             }} ===
-#              Absinthe.run(
-#                """
-#                  query {
-#                   user {
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema
-#              )
-#   end
-
-#   test "not found" do
-#     assert {:ok,
-#             %{
-#               errors: [
-#                 %{
-#                   extensions: %{code: "NOT_FOUND"},
-#                   message:
-#                     "The entity(ies) provided in the following arg(s), could not be found: id"
-#                 }
-#               ]
-#             }} =
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $id: ID!
-#                  ) {
-#                  user(
-#                    id: $id
-#                    ){
-#                    id
-#                    name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "id" => "unknown"
-#                }
-#              )
-#   end
-# end
-
-# describe "loading one array argument" do
-#   test "success" do
-#     assert {:ok,
-#             %{
-#               data: %{
-#                 "users" => [
-#                   %{"id" => "1", "name" => "Ally"},
-#                   %{"id" => "2", "name" => "Bob"}
-#                 ]
-#               }
-#             }} ===
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $ids: [ID]!
-#                  ) {
-#                   users(
-#                     ids: $ids
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "ids" => ["1", "2"]
-#                }
-#              )
-#   end
-
-#   test "empty list" do
-#     assert {
-#              :ok,
-#              %{
-#                data: %{
-#                  "users" => []
-#                }
-#              }
-#            } ===
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $ids: [ID]!
-#                  ) {
-#                   users(
-#                     ids: $ids
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "ids" => []
-#                }
-#              )
-#   end
-
-#   test "not found - unknown id" do
-#     assert {:ok,
-#             %{
-#               errors: [
-#                 %{
-#                   extensions: %{code: "NOT_FOUND"},
-#                   message:
-#                     "The entity(ies) provided in the following arg(s), could not be found: ids"
-#                 }
-#               ]
-#             }} =
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $ids: [ID]!
-#                  ) {
-#                   users(
-#                     ids: $ids
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "ids" => ["1", "unknown", "2"]
-#                }
-#              )
-#   end
-
-#   test "not found - duplicate ids" do
-#     assert {:ok,
-#             %{
-#               errors: [
-#                 %{
-#                   extensions: %{code: "NOT_FOUND"},
-#                   message:
-#                     "The entity(ies) provided in the following arg(s), could not be found: ids"
-#                 }
-#               ]
-#             }} =
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $ids: [ID]!
-#                  ) {
-#                   users(
-#                     ids: $ids
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "ids" => ["1", "1", "2"]
-#                }
-#              )
-#   end
-
-#   test "not found when using Sorting.sort_alike" do
-#     assert {:ok,
-#             %{
-#               errors: [
-#                 %{
-#                   extensions: %{code: "NOT_FOUND"},
-#                   message:
-#                     "The entity(ies) provided in the following arg(s), could not be found: ids"
-#                 }
-#               ]
-#             }} =
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $ids: [ID]!
-#                  ) {
-#                   usersOrderPreserved(
-#                     ids: $ids
-#                    ){
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "ids" => ["1", "unknown", "2"]
-#                }
-#              )
-#   end
-# end
-
-# describe "loading two arguments" do
-#   test "success" do
-#     assert {
-#              :ok,
-#              %{
-#                data: %{
-#                  "twoUsers" => [
-#                    %{"id" => "2", "name" => "Bob"},
-#                    %{"id" => "1", "name" => "Ally"}
-#                  ]
-#                }
-#              }
-#            } ===
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $user1Id: ID!
-#                    $user2Id: ID!
-#                  ) {
-#                   twoUsers (
-#                     user1Id: $user1Id
-#                     user2Id: $user2Id
-#                    ) {
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "user1Id" => "2",
-#                  "user2Id" => "1"
-#                }
-#              )
-#   end
-
-#   test "one not provided" do
-#     assert {
-#              :ok,
-#              %{
-#                data: %{
-#                  "twoUsers" => [
-#                    nil,
-#                    %{"id" => "2", "name" => "Bob"}
-#                  ]
-#                }
-#              }
-#            } ===
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $user2Id: ID!
-#                  ) {
-#                   twoUsers (
-#                     user2Id: $user2Id
-#                    ) {
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "user2Id" => "2"
-#                }
-#              )
-#   end
-
-#   test "none provided" do
-#     assert {
-#              :ok,
-#              %{
-#                data: %{
-#                  "twoUsers" => [nil, nil]
-#                }
-#              }
-#            } ===
-#              Absinthe.run(
-#                """
-#                  query {
-#                   twoUsers {
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema
-#              )
-#   end
-
-#   test "error one not found" do
-#     assert {
-#              :ok,
-#              %{
-#                data: nil,
-#                errors: [
-#                  %{
-#                    extensions: %{code: "NOT_FOUND"},
-#                    message:
-#                      "The entity(ies) provided in the following arg(s), could not be found: user2_id"
-#                  }
-#                ]
-#              }
-#            } =
-#              Absinthe.run(
-#                """
-#                  query (
-#                    $user1Id: ID!
-#                    $user2Id: ID!
-#                  ) {
-#                   twoUsers (
-#                     user1Id: $user1Id
-#                     user2Id: $user2Id
-#                    ) {
-#                     id
-#                     name
-#                    }
-#                  }
-#                """,
-#                TestSchema,
-#                variables: %{
-#                  "user1Id" => "1",
-#                  "user2Id" => "unknown"
-#                }
-#              )
-#   end
-# end

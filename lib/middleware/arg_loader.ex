@@ -7,11 +7,12 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   As configuration it accepts a map of original argument names to a keyword list, containing:
 
-  - `load_function`: the function used to load the argument into an entity.
-    As an input accepts one single argument: the input received in the resolution.
-    The function should return the entity, or `nil` when not found.
   - `new_name`: the new name to push the loaded entity into.
-    (optional, defaults to the original argument name).
+    (optional, defaults to `argument_name`).
+  - `load_function`: the function used to load the argument into an entity.
+    As an input accepts one single argument: the input received in the value of `argument_name`.
+    The function should return the entity or a list of entities.
+    `nil` or an empty list when not found .
 
   ## Examples
 
@@ -68,7 +69,7 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
   end
   ```
 
-  Note the use of ` AbsintheUtils.Helpers.Sorting.sort_alike/2` to ensure the returned list of
+  Note the use of `AbsintheUtils.Helpers.Sorting.sort_alike/2` to ensure the returned list of
   entities from the repository is sorted according to the user's input.
   """
 
@@ -85,11 +86,11 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
       opts
       |> Enum.reduce(
         {arguments, []},
-        fn {argument_name, opts}, {arguments, not_found_arguments} ->
+        fn {argument_name, argument_opts}, {arguments, not_found_arguments} ->
           case load_entities(
                  arguments,
                  argument_name,
-                 opts
+                 argument_opts
                ) do
             :not_found ->
               {
@@ -125,22 +126,21 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
       when is_map_key(arguments, argument_name) do
     load_function = Keyword.fetch!(opts, :load_function)
     push_to_key = Keyword.get(opts, :new_name, argument_name)
+    nil_is_not_found = Keyword.get(opts, :nil_is_not_found, true)
 
     {input_value, arguments} = Map.pop!(arguments, argument_name)
 
     case load_function.(input_value) do
-      nil ->
+      nil when nil_is_not_found ->
         :not_found
 
-      entities when is_list(entities) ->
-        # TODO: Can we assume the result is a list of entities
-        #  based on the output of the load function?
-        # We could also check the input type,
-        #  but the saver solution might be to to add a `is_list` option.
+      nil ->
+        Map.put(arguments, push_to_key, nil)
 
-        entities = Enum.reject(entities, &is_nil/1)
+      entities when is_list(entities) and is_list(input_value) ->
+        entities = if nil_is_not_found, do: Enum.reject(entities, &is_nil/1), else: entities
 
-        if is_list(input_value) and length(entities) != length(input_value) do
+        if length(entities) != length(input_value) do
           :not_found
         else
           Map.put(arguments, push_to_key, entities)

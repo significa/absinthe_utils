@@ -56,6 +56,7 @@ defmodule AbsintheUtils.MixProject do
   defp deps do
     [
       {:absinthe, "~> 1.7"},
+      {:absinthe_plug, "~> 1.5"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:ecto, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},

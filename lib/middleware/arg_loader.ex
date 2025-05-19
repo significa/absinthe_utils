@@ -118,12 +118,18 @@ defmodule AbsintheUtils.Middleware.ArgLoader do
 
   @behaviour Absinthe.Middleware
 
+  alias Absinthe.Resolution
   alias AbsintheUtils.Helpers.Errors
   alias AbsintheUtils.Internal.MapHelpers
 
   @impl true
+  def call(%Resolution{state: :resolved} = resolution, _) do
+    resolution
+  end
+
+  @impl true
   def call(
-        resolution = %{arguments: arguments},
+        %Resolution{arguments: arguments} = resolution,
         opts
       ) do
     {arguments, not_found_arguments} =

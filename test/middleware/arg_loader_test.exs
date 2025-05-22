@@ -1409,5 +1409,29 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                  }
                )
     end
+
+    test "not found" do
+      assert {:ok,
+              %{
+                errors: [
+                  %{
+                    extensions: %{code: "NOT_FOUND"},
+                    message:
+                      "The entity(ies) provided in the following arg(s), could not be found: " <>
+                        "complexInputObject.user2Id, complexInputObject.user1Id"
+                  }
+                ]
+              }} =
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "complexInputObject" => %{
+                     "user1Id" => "unknown",
+                     "user2Id" => "unknown"
+                   }
+                 }
+               )
+    end
   end
 end

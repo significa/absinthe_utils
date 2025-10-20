@@ -59,7 +59,7 @@ defmodule AbsintheUtils.MixProject do
       {:absinthe_plug, "~> 1.5"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:ecto, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false},
       {:jason, ">= 1.1.0", only: [:dev, :test], runtime: false}
     ]
   end

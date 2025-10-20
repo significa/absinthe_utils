@@ -21,8 +21,15 @@ defmodule AbsintheUtils.Scalars.StrictNaiveDateTime do
 
   **Usage:**
 
-  Import the type in your schema `import_types(AbsintheUtils.Scalars.StrictNaiveDateTime)` and you will be able
-  to use the `:strict_naive_datetime` type.
+  1. In your schema, import the type:
+    ```
+    import_types(AbsintheUtils.Scalars.StrictNaiveDateTime)
+    ```
+
+  2. Use the type in your schema:
+    ```
+    field :my_field, :strict_naive_datetime
+    ```
 
   **Acknowledgements:**
 

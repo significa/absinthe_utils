@@ -321,7 +321,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
               load_function: fn _context, input_value ->
                 SampleRepository.get_user(input_value)
               end,
-              nil_is_not_found: true
+              nil_is_not_found: false
             ]
           }
         )
@@ -1410,6 +1410,53 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                )
     end
 
+    test "optional argument passed as nil" do
+      assert {:ok,
+              %{
+                data: %{
+                  "complexInput" => %{
+                    "processedInput" => %{
+                      "user1" => %{"id" => "2", "name" => "Bob"},
+                      "user2" => nil
+                    }
+                  }
+                }
+              }} ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "complexInputObject" => %{
+                     "user1Id" => "2",
+                     "user2Id" => nil
+                   }
+                 }
+               )
+    end
+
+    test "optional argument not passed" do
+      assert {:ok,
+              %{
+                data: %{
+                  "complexInput" => %{
+                    "processedInput" => %{
+                      "user1" => %{"id" => "2", "name" => "Bob"},
+                      "user2" => nil
+                    }
+                  }
+                }
+              }} ===
+               Absinthe.run(
+                 @query,
+                 TestSchema,
+                 variables: %{
+                   "complexInputObject" => %{
+                     "user1Id" => "2"
+                   }
+                 }
+               )
+    end
+
     test "not found" do
       assert {:ok,
               %{
@@ -1418,7 +1465,7 @@ defmodule AbsintheUtilsTest.Middleware.ArgLoaderTest do
                     extensions: %{code: "NOT_FOUND"},
                     message:
                       "The entity(ies) provided in the following arg(s), could not be found: " <>
-                        "complexInputObject.user2Id, complexInputObject.user1Id"
+                        "complexInputObject.user1Id"
                   }
                 ]
               }} =

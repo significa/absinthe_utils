@@ -1,4 +1,6 @@
 defmodule AbsintheUtilsTest.Middleware.DeprecatedArgsTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   alias AbsintheUtils.Middleware.DeprecatedArgs

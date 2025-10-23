@@ -22,19 +22,30 @@ end
 
 Documentation can be found in [HexDocs].
 
-# Main Features:
+# Main Features
+
+Middlewares:
 
 - `AbsintheUtils.Middleware.ArgLoader`: Middleware for loading entities in `field` arguments.
 - `AbsintheUtils.Middleware.DeprecatedArgs`: Middleware for handling deprecated or renamed `field`
   arguments (`arg`).
+- `AbsintheUtils.Middleware.MutuallyExclusiveInputs `: Absinthe middleware for validating mutually exclusive input arguments.
+
+Scalars:
+
 - `AbsintheUtils.Scalars.JSON`: JSON scalar.
 - `AbsintheUtils.Scalars.UUID`: UUID scalar.
 - `AbsintheUtils.Scalars.StrictNaiveDateTime`: NaiveDatetime that does not accept ISO8601 with offset.
 
-# Code standards / re-usable patterns:
+Types:
 
 - `AbsintheUtils.Types.DateFilterTypes`: Date `from`/`to` filters.
 - `AbsintheUtils.Types.PaginationTypes`: Pagination params and details.
+
+Helpers and utility functions:
+
+- `AbsintheUtils.Helpers.Sorting`: Sort alike utils for batch handling.
+- `AbsintheUtils.Helpers.Errors`: Helper to put error results in absinthe resolutions.
 
 [hexpm]: https://hex.pm/packages/absinthe_utils
 [hexdocs]: https://hexdocs.pm/absinthe_utils

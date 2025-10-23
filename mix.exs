@@ -36,7 +36,17 @@ defmodule AbsintheUtils.MixProject do
         groups_for_modules: [
           "Absinthe middlewares": [
             AbsintheUtils.Middleware.ArgLoader,
+            AbsintheUtils.Middleware.MutuallyExclusiveInputs,
             AbsintheUtils.Middleware.DeprecatedArgs
+          ],
+          "Absinthe scalars": [
+            AbsintheUtils.Scalars.JSON,
+            AbsintheUtils.Scalars.UUID,
+            AbsintheUtils.Scalars.StrictNaiveDateTime
+          ],
+          "Absinthe types": [
+            AbsintheUtils.Types.DateFilterTypes,
+            AbsintheUtils.Types.PaginationTypes
           ],
           "Helpers and utility functions": [
             AbsintheUtils.Helpers.Sorting,

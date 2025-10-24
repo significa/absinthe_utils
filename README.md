@@ -2,8 +2,7 @@
 
 Collection of utilities for [absinthe](https://hexdocs.pm/absinthe).
 
-[![absinthe_utils in hex.pm](https://img.shields.io/hexpm/v/absinthe_utils?style=flat)][hexpm]
-
+[![absinthe_utils in hex.pm](https://img.shields.io/hexpm/v/absinthe_utils?style=flat)](https://hex.pm/packages/absinthe_utils)
 [![absinthe_utils documentation](https://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)][hexdocs]
 
 ## Installation
@@ -47,5 +46,4 @@ Helpers and utility functions:
 - `AbsintheUtils.Helpers.Sorting`: Sort alike utils for batch handling.
 - `AbsintheUtils.Helpers.Errors`: Helper to put error results in absinthe resolutions.
 
-[hexpm]: https://hex.pm/packages/absinthe_utils
 [hexdocs]: https://hexdocs.pm/absinthe_utils

@@ -38,7 +38,7 @@ Scalars:
 
 Types:
 
-- `AbsintheUtils.Types.DateFilterTypes`: Date `from`/`to` filters.
+- `AbsintheUtils.Types.DateFilterTypes`: Date `gte`/`lte` filters.
 - `AbsintheUtils.Types.PaginationTypes`: Pagination params and details.
 
 Helpers and utility functions:

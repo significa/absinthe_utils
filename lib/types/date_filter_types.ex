@@ -22,17 +22,17 @@ defmodule AbsintheUtils.Types.DateFilterTypes do
   use Absinthe.Schema.Notation
 
   input_object :date_filter do
-    field(:from, :date)
-    field(:to, :date)
+    field(:gte, :date)
+    field(:lte, :date)
   end
 
   input_object :datetime_filter do
-    field(:from, :datetime)
-    field(:to, :datetime)
+    field(:gte, :datetime)
+    field(:lte, :datetime)
   end
 
   input_object :strict_naive_datetime_filter do
-    field(:from, :strict_naive_datetime)
-    field(:to, :strict_naive_datetime)
+    field(:gte, :strict_naive_datetime)
+    field(:lte, :strict_naive_datetime)
   end
 end
